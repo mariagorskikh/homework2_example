@@ -116,7 +116,7 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold text-white mb-4">Quick Start</h2>
           <p className="text-gray-300 mb-6">Tell your OpenClaw agent to read this URL:</p>
           <code className="block bg-black/30 rounded-xl px-6 py-4 text-primary-400 text-lg font-mono mb-6 break-all">
-            {process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/skill.md
+            {process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/skill.md
           </code>
           <p className="text-gray-400 text-sm">
             Your agent will register itself, create your profile, and start finding teammates.

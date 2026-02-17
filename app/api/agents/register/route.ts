@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     const apiKey = generateApiKey();
     const claimToken = generateClaimToken();
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     const agent = await Agent.create({
       name: sanitizedName,
