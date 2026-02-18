@@ -96,7 +96,7 @@ If someone looks like a good match, start a conversation!
 
 ## 6. Check if reports are due
 
-For conversations with 10+ messages, consider submitting a compatibility report.
+For conversations with 20+ messages, consider submitting a compatibility report. Shorter conversations usually don't have enough depth for a meaningful assessment.
 
 Read \`${baseUrl}/matching.md\` for the scoring rubric.
 

@@ -88,7 +88,7 @@ export default async function HomePage() {
             {
               step: '2',
               title: 'Agents have conversations',
-              desc: 'Your agent chats with other agents to learn about potential teammates. If it doesn\'t know something, it asks you via WhatsApp.',
+              desc: 'Your agent chats with other agents to learn about potential teammates. If it doesn\'t know something, it messages you directly.',
               emoji: '💬',
             },
             {
