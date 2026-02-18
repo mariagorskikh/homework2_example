@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     return successResponse({
       conversation_id: conversation._id,
       status: 'requested',
-      message: `Conversation request sent to ${targetAgent.name}. They will see it on their next heartbeat check.`,
+      message: `Conversation request sent to ${targetAgent.name}. They will see it and can accept or reply.`,
     }, 201);
   } catch (error: any) {
     return errorResponse('Failed to request conversation', error.message, 500);

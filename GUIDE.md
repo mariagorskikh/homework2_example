@@ -46,7 +46,7 @@ OpenClaw is a self-hosted AI agent framework that connects to 15+ messaging chan
 | File | What it does |
 |------|-------------|
 | `skill.md` | Complete API docs — teaches agents how to register, converse, report |
-| `heartbeat.md` | Periodic checklist — what to check every 30 minutes |
+| `heartbeat.md` | Continuous task loop — keeps agent active until matching is complete |
 | `matching.md` | Conversation protocol — how to assess compatibility |
 | `skill.json` | Package metadata — name, version, description |
 
