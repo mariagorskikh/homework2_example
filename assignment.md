@@ -72,27 +72,33 @@ The frontend doesn't need to be fancy, but it should be functional and look dece
 
 ### Step 1: Set Up Your Project
 
-We recommend **Next.js** with TypeScript — it gives you frontend pages, API routes, and deployment in one package.
+**Use whatever tech stack you want.** The example below uses Next.js + MongoDB, but you can use Flask + SQLite, Express + PostgreSQL, Django + Supabase, Rails, Go — whatever you're comfortable with. The only thing that matters is that your app serves `skill.md`, `heartbeat.md`, `skill.json`, has API endpoints, and has a frontend.
+
+**Example with Next.js + MongoDB** (recommended if you don't have a strong preference):
 
 ```bash
 npx create-next-app@latest my-agent-app --typescript --app --tailwind
 cd my-agent-app
+npm install mongoose nanoid
 ```
 
-Install MongoDB (for storing agent data, content, etc.):
+**Pick any database you want.** Some free options:
 
-```bash
-npm install mongoose
-```
+| Database | Free Tier | Good for |
+|----------|-----------|----------|
+| [MongoDB Atlas](https://cloud.mongodb.com) | 512MB free forever | Document-based, flexible schemas |
+| [Supabase](https://supabase.com) | 500MB, 2 projects free | PostgreSQL, built-in auth |
+| [PlanetScale](https://planetscale.com) | 1 DB free | MySQL, great for relational data |
+| [Turso](https://turso.tech) | 9GB free | SQLite at the edge, simple |
+| [Neon](https://neon.tech) | 512MB free | Serverless PostgreSQL |
+| SQLite file | Unlimited, free | Simplest possible, works locally |
 
-Create a free MongoDB Atlas database:
-1. Go to [cloud.mongodb.com](https://cloud.mongodb.com)
-2. Create a free cluster (M0 — 512MB, completely free)
-3. Create a database user (username + password)
-4. Get your connection string (click "Connect" → "Drivers" → copy the URI)
-5. Replace `<password>` in the URI with your actual password
+If using MongoDB Atlas:
+1. Go to [cloud.mongodb.com](https://cloud.mongodb.com) → create a free M0 cluster
+2. Create a database user → get connection string
+3. Replace `<password>` in the URI with your actual password
 
-Create `.env.local`:
+Create `.env.local` (or equivalent for your framework):
 
 ```env
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
@@ -102,13 +108,15 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ADMIN_KEY=pick-any-secret-string
 ```
 
-**Important:** Add `.env*.local` to your `.gitignore` so you don't push credentials to GitHub.
+**Important:** Never push credentials to GitHub. Add `.env*.local` to `.gitignore`.
 
 ---
 
 ### Step 2: Database Connection
 
-Create `lib/db/mongodb.ts` — this handles connection pooling for serverless environments:
+**(Skip this if you're using a different database — adapt to your ORM/driver.)**
+
+If using MongoDB with Mongoose, create `lib/db/mongodb.ts` — this handles connection pooling for serverless environments:
 
 ```typescript
 import mongoose from 'mongoose';
@@ -135,7 +143,9 @@ export async function connectDB() {
 
 ### Step 3: Define Your Models
 
-At minimum you need an **Agent** model. Create `lib/models/Agent.ts`:
+**(Adapt this to your database. The schema is what matters, not the ORM.)**
+
+At minimum you need an **Agent** model. Here's an example with Mongoose — if you're using Prisma, Drizzle, SQLAlchemy, or raw SQL, just create the equivalent table/schema. Create `lib/models/Agent.ts`:
 
 ```typescript
 import mongoose, { Schema, Document } from 'mongoose';
@@ -489,18 +499,19 @@ Add `APP_URL` to your deployment environment set to your production URL.
 
 ### Step 11: Deploy to Railway
 
+We'll use [Railway](https://railway.com) for deployment. (You can also use Vercel, Render, Fly.io, or any other platform — your app just needs to be live at a public URL.)
+
 1. Push your code to GitHub (make sure `.env*.local` is in `.gitignore`)
 
-2. Create a Railway project at [railway.com](https://railway.com) (free tier available)
+2. Create an account at [railway.com](https://railway.com)
 
-3. Connect your GitHub repo
+3. Click **New Project** → **Deploy from GitHub repo** → select your repo
 
-4. Add environment variables in Railway dashboard:
-   - `MONGODB_URI` — your Atlas connection string
-   - `MONGODB_DB` — your database name
+4. Add environment variables in the Railway dashboard (click on your service → **Variables**):
+   - Your database connection string (e.g. `MONGODB_URI`)
    - `APP_URL` — your Railway URL (e.g. `https://my-app.up.railway.app`)
-   - `NEXT_PUBLIC_APP_URL` — same as APP_URL
    - `ADMIN_KEY` — a secret string for admin endpoints
+   - Any other env vars your app needs
 
 5. Create `railway.json` in your project root:
 
@@ -516,9 +527,11 @@ Add `APP_URL` to your deployment environment set to your production URL.
 }
 ```
 
-6. Push to GitHub — Railway auto-deploys
+6. Push to GitHub — Railway auto-deploys on every push
 
-7. **Verify your deployment:**
+7. Go to your service's **Settings** → **Networking** → **Generate Domain** to get your public URL
+
+**Verify your deployment:**
 
 ```bash
 # Check skill.md serves correctly with your production URL
@@ -529,6 +542,8 @@ curl -X POST https://your-app.up.railway.app/api/agents/register \
   -H "Content-Type: application/json" \
   -d '{"name": "TestAgent", "description": "Testing deployment"}'
 ```
+
+Make sure `skill.md` shows your production URL (not `localhost`). If it shows `localhost`, check Step 10 — you probably need to set `APP_URL` in your Railway environment variables.
 
 ---
 
@@ -555,68 +570,44 @@ curl -X POST https://your-url/api/agents/register \
 
 ---
 
-## Deliverables
+## Reference Example: ClawMatchStudio
 
-1. **GitHub repository** (public) with all source code
-2. **Deployed app** on Railway (or similar) with a working URL
-3. **Working skill.md** at `https://your-url/skill.md`
-4. **Working heartbeat.md** at `https://your-url/heartbeat.md`
-5. **Working skill.json** at `https://your-url/skill.json`
-6. **Frontend** — at least a landing page, claim page, and content pages
-7. **At least 3 API endpoints** beyond registration/claiming (your app's core functionality)
-8. **README.md** explaining what your app does and how to run it locally
-
----
-
-## Grading Rubric
-
-| Category | Points | What we're looking for |
-|----------|--------|----------------------|
-| **skill.md quality** | 25 | Clear, complete, step-by-step. An agent can read it and use your app autonomously. Includes curl examples and response formats. |
-| **heartbeat.md** | 10 | Defines a clear goal and task loop. Tells agents what "done" looks like. Handles errors by asking the human. |
-| **API design** | 20 | Clean endpoints, proper auth, consistent response format, good error messages with hints. |
-| **Core functionality** | 20 | Your app does something interesting and works end-to-end. Agents can complete the full flow. |
-| **Frontend** | 15 | Looks decent, is functional. Landing page explains the app. Claim page works. Content is browsable. |
-| **Deployment** | 10 | App is live, skill.md serves the correct production URL, all endpoints work in production. |
-| **Total** | **100** | |
-
-**Bonus points (up to 10):**
-- Particularly creative or useful app idea
-- Agent-to-agent interactions (agents talk to each other through your app)
-- Beautiful frontend design
-- Extra protocol files (e.g., a `matching.md` style conversation guide)
-- Seed script that populates sample data
-
----
-
-## Reference: ClawMatchStudio
-
-An example implementation is available at:
+**This is just one example.** It uses Next.js + MongoDB + Railway, but you can use completely different tools. What matters is the protocol (skill.md, heartbeat.md, skill.json) and that agents can use your app.
 
 - **GitHub:** [github.com/mariagorskikh/homework2_example](https://github.com/mariagorskikh/homework2_example)
-- **Live:** [clawmatch.up.railway.app](https://clawmatch.up.railway.app)
+- **Live app:** [clawmatch.up.railway.app](https://clawmatch.up.railway.app)
 - **skill.md:** [clawmatch.up.railway.app/skill.md](https://clawmatch.up.railway.app/skill.md)
+- **heartbeat.md:** [clawmatch.up.railway.app/heartbeat.md](https://clawmatch.up.railway.app/heartbeat.md)
+- **Assignment doc:** [github.com/mariagorskikh/homework2_example/blob/main/assignment.md](https://github.com/mariagorskikh/homework2_example/blob/main/assignment.md)
 
-This is a team matching app where agents have conversations to find compatible teammates. Study it for patterns — but build something different.
+ClawMatchStudio is a team matching app where agents have conversations with each other to find compatible teammates. Study it for the patterns — the protocol files, the API design, the auth flow, the frontend — but build something different and make it your own.
+
+**Other references:**
+
+- **OpenClaw** — the agent framework your agent runs on: [openclaw.com](https://openclaw.com)
+- **Moltbook** — a social network for agents that uses the same skill.md protocol: [moltbook.com](https://moltbook.com)
 
 ---
 
 ## FAQ
 
-**Q: Can I use a different framework than Next.js?**
-A: Yes, but Next.js is recommended because it handles frontend + API + deployment in one package. If you use something else, you still need all the same deliverables.
+**Q: Do I have to use Next.js?**
+A: No. Use whatever you want — Flask, Express, Django, Rails, Go, anything. The example uses Next.js because it bundles frontend + API + deployment nicely, but it's just one option. Pick whatever you're most productive with.
 
-**Q: Can I use a different database?**
-A: Yes. MongoDB Atlas is recommended because it's free and easy, but you can use Supabase, PlanetScale, or any other free database.
+**Q: Do I have to use MongoDB?**
+A: No. Use any database — PostgreSQL, MySQL, SQLite, Supabase, PlanetScale, Turso, Neon, even a JSON file if your app is simple enough. The example uses MongoDB Atlas because the free tier is generous, but it's just one option.
 
-**Q: Can I use a different hosting platform?**
-A: Yes. Railway is recommended, but Vercel, Render, or Fly.io all work. Your app just needs to be live at a public URL.
+**Q: Do I have to deploy on Railway?**
+A: No. Deploy anywhere — Vercel, Render, Fly.io, Netlify, your own VPS, whatever. Your app just needs to be live at a public URL so agents can reach it.
 
-**Q: Do I need to build agent-to-agent conversations?**
-A: No. That's a bonus. Your app just needs to be usable by individual agents through the skill.md protocol.
+**Q: Do I have to follow the exact code structure from the example?**
+A: No. The example is one way to do it. What matters is: your app serves `skill.md`, `heartbeat.md`, and `skill.json` at the right URLs, has API endpoints that work, has auth, and has a frontend. How you organize the code internally is up to you.
+
+**Q: Do I need agent-to-agent conversations?**
+A: No. That's what the example does, but your app can be anything. An event planner where agents RSVP, a review board where agents post ratings, a marketplace — whatever you want. Agents just need to be able to use it through skill.md.
 
 **Q: How detailed should skill.md be?**
-A: Very detailed. Include curl commands for every endpoint, show example responses, explain what to do on errors. The agent has never seen your app before — skill.md is the only documentation it gets.
+A: Very. Include curl commands for every endpoint, show example responses, explain what to do on errors. The agent has never seen your app before — skill.md is the only documentation it gets. If an agent can't figure out how to use your app from skill.md alone, it needs more detail.
 
 **Q: What if my agent doesn't know something about my human?**
 A: That's what OpenClaw channels are for. Your skill.md should tell agents: "If you don't know something about your human, message them through your channel (WhatsApp, Telegram, Discord, Slack, OpenClaw chat, etc.) and ask."
